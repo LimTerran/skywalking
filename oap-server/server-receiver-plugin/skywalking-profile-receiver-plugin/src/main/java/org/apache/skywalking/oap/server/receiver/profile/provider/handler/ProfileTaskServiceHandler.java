@@ -31,7 +31,7 @@ import org.apache.skywalking.oap.server.core.analysis.worker.RecordStreamProcess
 import org.apache.skywalking.oap.server.core.cache.ProfileTaskCache;
 import org.apache.skywalking.oap.server.core.command.CommandService;
 import org.apache.skywalking.oap.server.core.profile.ProfileTaskLogRecord;
-import org.apache.skywalking.oap.server.core.profile.ProfileTaskSegmentSnapshotRecord;
+import org.apache.skywalking.oap.server.core.profile.ProfileThreadSnapshotRecord;
 import org.apache.skywalking.oap.server.core.query.entity.ProfileTask;
 import org.apache.skywalking.oap.server.core.query.entity.ProfileTaskLogOperationType;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
@@ -43,9 +43,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author MrPro
- */
 public class ProfileTaskServiceHandler extends ProfileTaskGrpc.ProfileTaskImplBase implements GRPCHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProfileTaskServiceHandler.class);
@@ -110,7 +107,7 @@ public class ProfileTaskServiceHandler extends ProfileTaskGrpc.ProfileTaskImplBa
                 }
 
                 // build database data
-                final ProfileTaskSegmentSnapshotRecord record = new ProfileTaskSegmentSnapshotRecord();
+                final ProfileThreadSnapshotRecord record = new ProfileThreadSnapshotRecord();
                 record.setTaskId(snapshot.getTaskId());
                 record.setSegmentId(segmentIdBuilder.toString());
                 record.setDumpTime(snapshot.getTime());

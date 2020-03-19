@@ -16,15 +16,12 @@
  *
  */
 
-
 package org.apache.skywalking.apm.agent.core.context.trace;
 
 import org.apache.skywalking.apm.agent.core.context.TracingContext;
 
 /**
  * The <code>LocalSpan</code> represents a normal tracing point, such as a local method.
- *
- * @author wusheng
  */
 public class LocalSpan extends AbstractTracingSpan {
 
@@ -37,26 +34,25 @@ public class LocalSpan extends AbstractTracingSpan {
     }
 
     @Override
-    public LocalSpan tag(String key, String value) {
-        super.tag(key, value);
-        return this;
+    public boolean isEntry() {
+        return false;
     }
 
     @Override
-    public LocalSpan log(Throwable t) {
-        super.log(t);
-        return this;
-    }
-
-    @Override public boolean isEntry() {
+    public boolean isExit() {
         return false;
     }
 
-    @Override public boolean isExit() {
-        return false;
+    @Override
+    public AbstractSpan setPeer(String remotePeer) {
+        return this;
     }
 
-    @Override public AbstractSpan setPeer(String remotePeer) {
-        return this;
+    /**
+     * Illegal operation. Operation name id is the registered endpoint, only work for entry span.
+     */
+    @Override
+    public AbstractTracingSpan setOperationId(int operationId) {
+        throw new UnsupportedOperationException("Exit span doesn't support operation id");
     }
 }
