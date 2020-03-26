@@ -39,6 +39,7 @@ import org.apache.skywalking.apm.agent.core.dictionary.DictionaryManager;
 import org.apache.skywalking.apm.agent.core.dictionary.DictionaryUtil;
 import org.apache.skywalking.apm.agent.core.logging.api.ILog;
 import org.apache.skywalking.apm.agent.core.logging.api.LogManager;
+import org.apache.skywalking.apm.agent.core.profile.ProfileStatusReference;
 import org.apache.skywalking.apm.agent.core.profile.ProfileTaskExecutionService;
 import org.apache.skywalking.apm.agent.core.sampling.SamplingService;
 import org.apache.skywalking.apm.util.StringUtil;
@@ -106,9 +107,11 @@ public class TracingContext implements AbstractTracerContext {
     private final long createTime;
 
     /**
-     * profiling status
+     * profile status
      */
-    private volatile boolean profiling;
+    private final ProfileStatusReference profileStatus;
+
+    private final CorrelationContext correlationContext;
 
     /**
      * Initialize all fields with default value.
@@ -128,7 +131,9 @@ public class TracingContext implements AbstractTracerContext {
         if (PROFILE_TASK_EXECUTION_SERVICE == null) {
             PROFILE_TASK_EXECUTION_SERVICE = ServiceManager.INSTANCE.findService(ProfileTaskExecutionService.class);
         }
-        this.profiling = PROFILE_TASK_EXECUTION_SERVICE.addProfiling(this, segment.getTraceSegmentId(), firstOPName);
+        this.profileStatus = PROFILE_TASK_EXECUTION_SERVICE.addProfiling(this, segment.getTraceSegmentId(), firstOPName);
+
+        this.correlationContext = new CorrelationContext();
     }
 
     /**
@@ -231,6 +236,8 @@ public class TracingContext implements AbstractTracerContext {
         }
 
         carrier.setDistributedTraceIds(this.segment.getRelatedGlobalTraces());
+
+        this.correlationContext.inject(carrier);
     }
 
     /**
@@ -247,6 +254,8 @@ public class TracingContext implements AbstractTracerContext {
         if (span instanceof EntrySpan) {
             span.ref(ref);
         }
+
+        this.correlationContext.extract(carrier);
     }
 
     /**
@@ -258,7 +267,7 @@ public class TracingContext implements AbstractTracerContext {
     public ContextSnapshot capture() {
         List<TraceSegmentRef> refs = this.segment.getRefs();
         ContextSnapshot snapshot = new ContextSnapshot(
-            segment.getTraceSegmentId(), activeSpan().getSpanId(), segment.getRelatedGlobalTraces());
+            segment.getTraceSegmentId(), activeSpan().getSpanId(), segment.getRelatedGlobalTraces(), this.correlationContext);
         int entryOperationId;
         String entryOperationName = "";
         int entryApplicationInstanceId;
@@ -326,6 +335,7 @@ public class TracingContext implements AbstractTracerContext {
         this.segment.ref(segmentRef);
         this.activeSpan().ref(segmentRef);
         this.segment.relatedGlobalTraces(snapshot.getDistributedTraceId());
+        this.correlationContext.continued(snapshot);
     }
 
     /**
@@ -509,6 +519,11 @@ public class TracingContext implements AbstractTracerContext {
         finish();
     }
 
+    @Override
+    public CorrelationContext getCorrelationContext() {
+        return this.correlationContext;
+    }
+
     /**
      * Re-check current trace need profiling, encase third part plugin change the operation name.
      *
@@ -521,7 +536,7 @@ public class TracingContext implements AbstractTracerContext {
             return;
         }
 
-        profiling = PROFILE_TASK_EXECUTION_SERVICE.profilingRecheck(this, segment.getTraceSegmentId(), operationName);
+        PROFILE_TASK_EXECUTION_SERVICE.profilingRecheck(this, segment.getTraceSegmentId(), operationName);
     }
 
     /**
@@ -688,8 +703,7 @@ public class TracingContext implements AbstractTracerContext {
         return this.createTime;
     }
 
-    public boolean isProfiling() {
-        return this.profiling;
+    public ProfileStatusReference profileStatus() {
+        return this.profileStatus;
     }
-
 }
