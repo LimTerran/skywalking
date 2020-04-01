@@ -31,9 +31,10 @@ jobs:
   JavaVersions:
     name: Agent Java Versions
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     strategy:
       matrix:
-        jdk: [8, 9, 10, 11, 12]
+        jdk: [8, 9, 10, 11, 12, 13, 14]
     env:
       SW_SIMPLE_CASE: jdk
       SW_AGENT_JDK_VERSION: ${{ matrix.jdk }}
@@ -58,6 +59,7 @@ jobs:
 
   Single:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     needs: [JavaVersions]
     steps:
       - name: Singles Bar

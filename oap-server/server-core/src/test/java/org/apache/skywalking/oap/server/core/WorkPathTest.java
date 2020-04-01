@@ -16,13 +16,14 @@
  *
  */
 
-package org.apache.skywalking.oap.server.core.storage.type;
+package org.apache.skywalking.oap.server.core;
 
-public interface StorageDataType {
+import org.junit.Assert;
+import org.junit.Test;
 
-    String toStorageData();
-
-    void toObject(String data);
-
-    void copyFrom(Object source);
+public class WorkPathTest {
+    @Test
+    public void testPath() {
+        Assert.assertTrue(WorkPath.getPath().exists());
+    }
 }

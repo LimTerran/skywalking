@@ -13,21 +13,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package org.apache.skywalking.apm.agent.core.context;
+package org.apache.skywalking.oap.server.core.storage.annotation;
 
-public class SW7CorrelationCarrierItem extends CarrierItem {
-    public static final String HEADER_NAME = "sw7-correlation";
-    private final CorrelationContext correlationContext;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public SW7CorrelationCarrierItem(CorrelationContext correlationContext, CarrierItem next) {
-        super(HEADER_NAME, correlationContext.serialize(), next);
-        this.correlationContext = correlationContext;
-    }
-
-    @Override
-    public void setHeadValue(String headValue) {
-        this.correlationContext.deserialize(headValue);
-    }
+/**
+ * The support of the multiple {@link QueryUnifiedIndex}s on one field.
+ */
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MultipleQueryUnifiedIndex {
+    QueryUnifiedIndex[] value();
 }

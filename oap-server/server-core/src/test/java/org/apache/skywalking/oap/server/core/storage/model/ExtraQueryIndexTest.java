@@ -18,10 +18,21 @@
 
 package org.apache.skywalking.oap.server.core.storage.model;
 
-import org.apache.skywalking.oap.server.core.storage.annotation.Storage;
-import org.apache.skywalking.oap.server.library.module.Service;
+import org.junit.Assert;
+import org.junit.Test;
 
-public interface IModelSetter extends Service {
+public class ExtraQueryIndexTest {
+    @Test
+    public void testIndexColumns() {
+        final ExtraQueryIndex extraQueryIndex = new ExtraQueryIndex("a1", new String[] {"a2"});
+        Assert.assertArrayEquals(new String[] {
+            "a1",
+            "a2"
+        }, extraQueryIndex.getColumns());
+    }
 
-    Model putIfAbsent(Class aClass, int scopeId, Storage storage, boolean record);
+    @Test(expected = IllegalArgumentException.class)
+    public void testIllegalIndexColumns() {
+        ExtraQueryIndex extraQueryIndex = new ExtraQueryIndex("a1", new String[0]);
+    }
 }

@@ -27,12 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
+import org.apache.skywalking.oap.server.core.analysis.manual.endpoint.EndpointTraffic;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 import org.apache.skywalking.oap.server.core.storage.IMetricsDAO;
 import org.apache.skywalking.oap.server.core.storage.StorageBuilder;
 import org.apache.skywalking.oap.server.core.storage.model.Model;
 import org.apache.skywalking.oap.server.core.storage.model.ModelColumn;
-import org.apache.skywalking.oap.server.core.storage.type.StorageDataType;
+import org.apache.skywalking.oap.server.core.storage.type.StorageDataComplexObject;
 import org.apache.skywalking.oap.server.library.client.request.InsertRequest;
 import org.apache.skywalking.oap.server.library.client.request.UpdateRequest;
 import org.apache.skywalking.oap.server.storage.plugin.influxdb.InfluxClient;
@@ -45,6 +46,8 @@ import static org.influxdb.querybuilder.BuiltQuery.QueryBuilder.select;
 
 public class MetricsDAO implements IMetricsDAO {
     public static final String TAG_ENTITY_ID = "_entity_id";
+    public static final String TAG_ENDPOINT_OWNER_SERVICE = "_service_id";
+    public static final String TAG_ENDPOINT_NAME = "_endpoint_name";
 
     private final StorageBuilder<Metrics> storageBuilder;
     private final InfluxClient client;
@@ -78,8 +81,8 @@ public class MetricsDAO implements IMetricsDAO {
 
             for (int i = 1; i < columns.size(); i++) {
                 Object value = values.get(i);
-                if (value instanceof StorageDataType) {
-                    value = ((StorageDataType) value).toStorageData();
+                if (value instanceof StorageDataComplexObject) {
+                    value = ((StorageDataComplexObject) value).toStorageData();
                 }
 
                 data.put(storageAndColumnNames.get(columns.get(i)), value);
@@ -94,9 +97,19 @@ public class MetricsDAO implements IMetricsDAO {
     @Override
     public InsertRequest prepareBatchInsert(Model model, Metrics metrics) throws IOException {
         final long timestamp = TimeBucket.getTimestamp(metrics.getTimeBucket(), model.getDownsampling());
-        return new InfluxInsertRequest(model, metrics, storageBuilder)
-            .time(timestamp, TimeUnit.MILLISECONDS)
-            .addFieldAsTag(Metrics.ENTITY_ID, TAG_ENTITY_ID);
+        if (metrics instanceof EndpointTraffic) {
+            /**
+             * @since 7.1.0 EndpointTraffic is a special manual metrics, to replace the old Endpoint Inventory.
+             */
+            return new InfluxInsertRequest(model, metrics, storageBuilder)
+                .time(timestamp, TimeUnit.MILLISECONDS)
+                .addFieldAsTag(EndpointTraffic.SERVICE_ID, TAG_ENDPOINT_OWNER_SERVICE)
+                .addFieldAsTag(EndpointTraffic.NAME, TAG_ENDPOINT_NAME);
+        } else {
+            return new InfluxInsertRequest(model, metrics, storageBuilder)
+                .time(timestamp, TimeUnit.MILLISECONDS)
+                .addFieldAsTag(Metrics.ENTITY_ID, TAG_ENTITY_ID);
+        }
     }
 
     @Override

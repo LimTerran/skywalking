@@ -13,17 +13,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
-package org.apache.skywalking.oap.server.core.storage.cache;
+package org.apache.skywalking.apm.agent.core.context;
 
-import org.apache.skywalking.oap.server.core.register.EndpointInventory;
-import org.apache.skywalking.oap.server.core.storage.DAO;
+public class SW8CorrelationCarrierItem extends CarrierItem {
+    public static final String HEADER_NAME = "sw8-correlation";
+    private final CorrelationContext correlationContext;
 
-public interface IEndpointInventoryCacheDAO extends DAO {
+    public SW8CorrelationCarrierItem(CorrelationContext correlationContext, CarrierItem next) {
+        super(HEADER_NAME, correlationContext.serialize(), next);
+        this.correlationContext = correlationContext;
+    }
 
-    int getEndpointId(int serviceId, String endpointName, int detectPoint);
-
-    EndpointInventory get(int endpointId);
+    @Override
+    public void setHeadValue(String headValue) {
+        this.correlationContext.deserialize(headValue);
+    }
 }

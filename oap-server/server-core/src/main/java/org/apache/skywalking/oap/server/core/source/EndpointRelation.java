@@ -20,7 +20,8 @@ package org.apache.skywalking.oap.server.core.source;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.analysis.manual.RelationDefineUtil;
 
 import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.ENDPOINT_RELATION;
 
@@ -33,18 +34,24 @@ public class EndpointRelation extends Source {
         return DefaultScopeDefine.ENDPOINT_RELATION;
     }
 
+    /**
+     * @since 7.1.0 SkyWalking doesn't do endpoint register. Use name directly.
+     */
     @Override
     public String getEntityId() {
-        return String.valueOf(endpointId) + Const.ID_SPLIT + String.valueOf(childEndpointId);
+        return RelationDefineUtil.buildEndpointRelationEntityId(new RelationDefineUtil.EndpointRelationDefine(
+            serviceId, endpoint, childServiceId, childEndpoint, componentId
+        ));
     }
 
     @Getter
-    @Setter
-    private int endpointId;
-    @Getter
-    @Setter
-    @ScopeDefaultColumn.DefinedByField(columnName = "source_endpoint_name", requireDynamicActive = true)
+    @ScopeDefaultColumn.DefinedByField(columnName = "source_endpoint_name")
     private String endpoint;
+
+    public void setEndpoint(final String endpoint) {
+        this.endpoint = CoreModule.formatEndpointName(endpoint);
+    }
+
     @Getter
     @Setter
     @ScopeDefaultColumn.DefinedByField(columnName = "service_id")
@@ -59,20 +66,20 @@ public class EndpointRelation extends Source {
     @Getter
     @Setter
     private String serviceInstanceName;
-
     @Getter
-    @Setter
-    private int childEndpointId;
-    @Getter
-    @Setter
-    @ScopeDefaultColumn.DefinedByField(columnName = "child_endpoint_name", requireDynamicActive = true)
+    @ScopeDefaultColumn.DefinedByField(columnName = "child_endpoint_name")
     private String childEndpoint;
+
+    public void setChildEndpoint(final String childEndpoint) {
+        this.childEndpoint = CoreModule.formatEndpointName(childEndpoint);
+    }
+
     @Getter
     @Setter
     @ScopeDefaultColumn.DefinedByField(columnName = "child_service_id")
     private int childServiceId;
-    @Getter
     @Setter
+    @Getter
     @ScopeDefaultColumn.DefinedByField(columnName = "child_service_name", requireDynamicActive = true)
     private String childServiceName;
     @Getter
@@ -81,7 +88,6 @@ public class EndpointRelation extends Source {
     @Getter
     @Setter
     private String childServiceInstanceName;
-
     @Getter
     @Setter
     private int componentId;

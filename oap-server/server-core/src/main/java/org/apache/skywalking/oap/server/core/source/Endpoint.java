@@ -20,6 +20,8 @@ package org.apache.skywalking.oap.server.core.source;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.analysis.manual.endpoint.EndpointTraffic;
 
 import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.ENDPOINT;
 import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.ENDPOINT_CATALOG_NAME;
@@ -32,18 +34,22 @@ public class Endpoint extends Source {
         return DefaultScopeDefine.ENDPOINT;
     }
 
+    /**
+     * @since 7.1.0 SkyWalking doesn't do endpoint register. Use name directly.
+     */
     @Override
     public String getEntityId() {
-        return String.valueOf(id);
+        return EndpointTraffic.buildId(serviceId, name, DetectPoint.SERVER);
     }
 
     @Getter
-    @Setter
-    private int id;
-    @Getter
-    @Setter
     @ScopeDefaultColumn.DefinedByField(columnName = "name", requireDynamicActive = true)
     private String name;
+
+    public void setName(final String name) {
+        this.name = CoreModule.formatEndpointName(name);
+    }
+
     @Getter
     @Setter
     @ScopeDefaultColumn.DefinedByField(columnName = "service_id")

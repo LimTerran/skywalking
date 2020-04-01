@@ -73,8 +73,8 @@ public class ContextCarrier implements Serializable {
     private CorrelationContext correlationContext = new CorrelationContext();
 
     public CarrierItem items() {
-        SW7CorrelationCarrierItem sw7CorrelationCarrierItem = new SW7CorrelationCarrierItem(correlationContext, null);
-        SW6CarrierItem sw6CarrierItem = new SW6CarrierItem(this, sw7CorrelationCarrierItem);
+        SW8CorrelationCarrierItem sw8CorrelationCarrierItem = new SW8CorrelationCarrierItem(correlationContext, null);
+        SW6CarrierItem sw6CarrierItem = new SW6CarrierItem(this, sw8CorrelationCarrierItem);
         return new CarrierItemHead(sw6CarrierItem);
     }
 
@@ -165,16 +165,8 @@ public class ContextCarrier implements Serializable {
         this.entryEndpointName = '#' + entryEndpointName;
     }
 
-    void setEntryEndpointId(int entryOperationId) {
-        this.entryEndpointName = entryOperationId + "";
-    }
-
     void setParentEndpointName(String parentEndpointName) {
         this.parentEndpointName = '#' + parentEndpointName;
-    }
-
-    void setParentEndpointId(int parentOperationId) {
-        this.parentEndpointName = parentOperationId + "";
     }
 
     public ID getTraceSegmentId() {

@@ -16,16 +16,19 @@
  *
  */
 
-package org.apache.skywalking.oap.server.core.register.service;
+package org.apache.skywalking.oap.server.core.storage.model;
 
-import org.apache.skywalking.oap.server.core.source.DetectPoint;
+import org.apache.skywalking.oap.server.core.storage.annotation.Storage;
 import org.apache.skywalking.oap.server.library.module.Service;
 
-public interface IEndpointInventoryRegister extends Service {
-
-    int getOrCreate(int serviceId, String endpointName, DetectPoint detectPoint);
-
-    int get(int serviceId, String endpointName, DetectPoint detectPoint);
-
-    void heartbeat(int endpointId, long heartBeatTime);
+/**
+ * INewModel implementation supports creating a new module.
+ */
+public interface INewModel extends Service {
+    /**
+     * Add a new model
+     *
+     * @return the created new model
+     */
+    Model add(Class<?> aClass, int scopeId, Storage storage, boolean record);
 }
