@@ -64,7 +64,7 @@ healthCheck http://localhost:12800/receiveData
 # start applications
 export agent_opts="-javaagent:${SCENARIO_HOME}/agent/skywalking-agent.jar
     -Dskywalking.collector.grpc_channel_check_interval=2
-    -Dskywalking.collector.app_and_service_register_check_interval=2
+    -Dskywalking.collector.heartbeat_period=2
     -Dskywalking.collector.discovery_check_interval=2
     -Dskywalking.collector.backend_service=localhost:19876
     -Dskywalking.agent.service_name=${SCENARIO_NAME}
@@ -73,7 +73,6 @@ export agent_opts="-javaagent:${SCENARIO_HOME}/agent/skywalking-agent.jar
     -Xms256m -Xmx256m ${agent_opts}"
 exec /var/run/${SCENARIO_NAME}/${SCENARIO_START_SCRIPT} 1>/dev/null &
 
-healthCheck http://localhost:12800/status
 healthCheck ${SCENARIO_HEALTH_CHECK_URL}
 
 echo "To visit entry service"
