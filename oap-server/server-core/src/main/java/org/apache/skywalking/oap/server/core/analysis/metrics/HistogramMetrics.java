@@ -39,13 +39,9 @@ public abstract class HistogramMetrics extends Metrics {
 
     public static final String DATASET = "dataset";
 
-    /**
-     * The special case when the column is isValue = true, but storageOnly = true, because it is {@link DataTable} type,
-     * this column can't be query by the aggregation way.
-     */
     @Getter
     @Setter
-    @Column(columnName = DATASET, isValue = true, storageOnly = true)
+    @Column(columnName = DATASET, dataType = Column.ValueDataType.HISTOGRAM, storageOnly = true, defaultValue = 0)
     private DataTable dataset = new DataTable(30);
 
     /**
@@ -75,13 +71,7 @@ public abstract class HistogramMetrics extends Metrics {
         }
         String idx = String.valueOf(index * step);
 
-        Long element = dataset.get(idx);
-        if (element == null) {
-            element = 1L;
-        } else {
-            element++;
-        }
-        dataset.put(idx, element);
+        dataset.valueAccumulation(idx, 1L);
     }
 
     @Override

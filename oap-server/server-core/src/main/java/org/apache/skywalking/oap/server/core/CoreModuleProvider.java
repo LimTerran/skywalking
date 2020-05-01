@@ -25,6 +25,7 @@ import org.apache.skywalking.oap.server.configuration.api.DynamicConfigurationSe
 import org.apache.skywalking.oap.server.core.analysis.ApdexThresholdConfig;
 import org.apache.skywalking.oap.server.core.analysis.DisableRegister;
 import org.apache.skywalking.oap.server.core.analysis.StreamAnnotationListener;
+import org.apache.skywalking.oap.server.core.analysis.meter.MeterSystem;
 import org.apache.skywalking.oap.server.core.analysis.metrics.ApdexMetrics;
 import org.apache.skywalking.oap.server.core.analysis.worker.MetricsStreamProcessor;
 import org.apache.skywalking.oap.server.core.analysis.worker.TopNStreamProcessor;
@@ -48,6 +49,7 @@ import org.apache.skywalking.oap.server.core.query.AggregationQueryService;
 import org.apache.skywalking.oap.server.core.query.AlarmQueryService;
 import org.apache.skywalking.oap.server.core.query.LogQueryService;
 import org.apache.skywalking.oap.server.core.query.MetadataQueryService;
+import org.apache.skywalking.oap.server.core.query.MetricsMetadataQueryService;
 import org.apache.skywalking.oap.server.core.query.MetricsQueryService;
 import org.apache.skywalking.oap.server.core.query.ProfileTaskQueryService;
 import org.apache.skywalking.oap.server.core.query.TopNRecordsQueryService;
@@ -153,6 +155,9 @@ public class CoreModuleProvider extends ModuleProvider {
             throw new ModuleStartException(e.getMessage(), e);
         }
 
+        MeterSystem meterSystem = MeterSystem.meterSystem(getManager());
+        this.registerServiceImplementation(MeterSystem.class, meterSystem);
+
         AnnotationScan oalDisable = new AnnotationScan();
         oalDisable.registerListener(DisableRegister.INSTANCE);
         oalDisable.registerListener(new DisableRegister.SingleDisableScanListener());
@@ -213,6 +218,7 @@ public class CoreModuleProvider extends ModuleProvider {
             NetworkAddressAliasCache.class, new NetworkAddressAliasCache(moduleConfig));
 
         this.registerServiceImplementation(TopologyQueryService.class, new TopologyQueryService(getManager()));
+        this.registerServiceImplementation(MetricsMetadataQueryService.class, new MetricsMetadataQueryService());
         this.registerServiceImplementation(MetricsQueryService.class, new MetricsQueryService(getManager()));
         this.registerServiceImplementation(TraceQueryService.class, new TraceQueryService(getManager()));
         this.registerServiceImplementation(LogQueryService.class, new LogQueryService(getManager()));
@@ -250,6 +256,7 @@ public class CoreModuleProvider extends ModuleProvider {
 
     @Override
     public void start() throws ModuleStartException {
+        MeterSystem.closeMeterCreationChannel();
 
         grpcServer.addHandler(new RemoteServiceHandler(getManager()));
         grpcServer.addHandler(new HealthCheckServiceHandler());
