@@ -68,8 +68,8 @@ public class TopNRecordsQuery implements ITopNRecordsQueryDAO {
             .column(TopN.TRACE_ID)
             .from(client.getDatabase(), condition.getName())
             .where()
-            .and(gte(TopN.TIME_BUCKET, duration.getStartTimeBucket()))
-            .and(lte(TopN.TIME_BUCKET, duration.getEndTimeBucket()));
+            .and(gte(TopN.TIME_BUCKET, duration.getStartTimeBucketInSec()))
+            .and(lte(TopN.TIME_BUCKET, duration.getEndTimeBucketInSec()));
 
         if (StringUtil.isNotEmpty(condition.getParentService())) {
             final String serviceId = IDManager.ServiceID.buildId(condition.getParentService(), condition.isNormal());
@@ -87,8 +87,9 @@ public class TopNRecordsQuery implements ITopNRecordsQueryDAO {
         final List<SelectedRecord> records = new ArrayList<>();
         series.getValues().forEach(values -> {
             SelectedRecord record = new SelectedRecord();
-            record.setValue(String.valueOf((long) values.get(1)));
+            record.setValue(String.valueOf(values.get(1)));
             record.setRefId((String) values.get(3));
+            record.setId(record.getRefId());
             record.setName((String) values.get(2));
             records.add(record);
         });

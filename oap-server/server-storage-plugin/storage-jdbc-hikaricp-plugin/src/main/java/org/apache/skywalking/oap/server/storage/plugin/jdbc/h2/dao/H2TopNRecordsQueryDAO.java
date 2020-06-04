@@ -55,9 +55,9 @@ public class H2TopNRecordsQueryDAO implements ITopNRecordsQueryDAO {
         }
 
         sql.append(" and ").append(TopN.TIME_BUCKET).append(" >= ?");
-        parameters.add(duration.getStartTimeBucket());
+        parameters.add(duration.getStartTimeBucketInSec());
         sql.append(" and ").append(TopN.TIME_BUCKET).append(" <= ?");
-        parameters.add(duration.getEndTimeBucket());
+        parameters.add(duration.getEndTimeBucketInSec());
 
         sql.append(" order by ").append(valueColumnName);
         if (condition.getOrder().equals(Order.DES)) {
@@ -75,6 +75,7 @@ public class H2TopNRecordsQueryDAO implements ITopNRecordsQueryDAO {
                     SelectedRecord record = new SelectedRecord();
                     record.setName(resultSet.getString(TopN.STATEMENT));
                     record.setRefId(resultSet.getString(TopN.TRACE_ID));
+                    record.setId(record.getRefId());
                     record.setValue(resultSet.getString(valueColumnName));
                     results.add(record);
                 }
